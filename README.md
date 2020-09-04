@@ -26,14 +26,8 @@ This app loads data from csv file into a database.
 The database model is created using the peewee module.
 User can use menu to navigate database and backup database to csv file.
 
-
-App main menu:
-
-======================================================
---Welcome to the Store Inventory Database--
-Select an option by entering the corresponding letter
 v) View entry in database
 a) Add entry to database
 b) Backup the database to csv
 q) Quit the app
-======================================================
+
