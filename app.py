@@ -22,53 +22,9 @@ class Product(Model):
 
 
 def initialize():
-    """create database and table if don't exist"""
+    """connect db, create db and table if don't exist"""
     db.connect()
     db.create_tables([Product], safe=True)
-
-
-def error_handler():
-    """generic error message and reroute to first menu choice"""
-    print("\n\nThat is not a valid option, please choose again.")
-    input("\nPress ENTER to continue...")
-    menu_loop()
-
-
-def menu_loop():
-    """show the menu"""
-    choice_main = None
-
-    print("""\n
-======================================================
---Welcome to the Store Inventory Database--\n
-Select an option by entering the corresponding letter\n
-v) View entries in database
-a) Add entry to database
-b) Backup the database to csv
-q) Quit the app
-======================================================
-    """)
-
-    choice_main = input("Enter letter to select option: ").lower().strip()
-
-    if choice_main == 'q':
-        print("\n\nThank you for using this app. Goodbye!")
-        print("\n\n----END----\n\n")
-        sys.exit()
-    else:
-        error_handler
-        
-
-def view_entries():
-    """view entries in database"""
-
-
-def add_entry():
-    """add entry to database"""
-
-
-def backup_database():
-    """backup the database to csv"""
 
 
 def read_csv():
@@ -103,13 +59,79 @@ def add_products():
             product_record.save()
 
 
+def menu_loop():
+    """show the menu"""
+    choice_main = None
+
+    print("""\n
+======================================================
+--Welcome to the Store Inventory Database--\n
+Select an option by entering the corresponding letter\n
+v) View entry in database
+a) Add entry to database
+b) Backup the database to csv
+q) Quit the app
+======================================================
+    """)
+
+    choice_main = input("Enter letter to select option: ").lower().strip()
+
+    if choice_main == 'v':
+        view_entry()
+    elif choice_main == 'a':
+        add_entry()
+    elif choice_main == 'b':
+        backup_database()
+    elif choice_main == 'q':
+        quit_app()
+    else:
+        error_handler()
+        
+
+def view_entry():
+    """view entry in database by product id"""
+    choice_view = None
+    choice_view = input("Enter product_id to view entry: ").lower().strip()
+
+    if choice_view == 'v':
+        view_entry()
+    else:
+        error_handler()
+
+
+def add_entry():
+    """add entry to database"""
+    name_input = None
+    qty_input = None
+    price_input = None
+
+    name_input = None
+    qty_input = None
+    price_input = None
+
+
+def backup_database():
+    """backup the database to csv"""
+    with open('backup.csv', 'a') as csvfile:
+        fieldnames = ['product_name','product_price','product_quantity','date_updated']
+        productwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+
+def quit_app():
+    """quit the application"""
+    print("\n\nThank you for using this app. Goodbye!")
+    print("\n\n----END----\n\n")
+    sys.exit()
+
+
+def error_handler():
+    """generic error message and reroute to main menu choice"""
+    print("\n\nThat is not a valid option, please choose again.")
+    input("\nPress ENTER to continue...")
+    menu_loop()
+
+
 if __name__ == "__main__":
     initialize()
     add_products()
     menu_loop()
-
-#    with open('requirements.txt', 'a') as csvfile:
-#        fieldnames = ['product_name','product_price','product_quantity','date_updated']
-#        productwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-
