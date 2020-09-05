@@ -5,6 +5,7 @@ from datetime import date
 from datetime import datetime
 
 from peewee import *
+from playhouse.shortcuts import model_to_dict
 
 
 db = SqliteDatabase('inventory.db')
@@ -27,6 +28,11 @@ def initialize():
     db.create_tables([Product], safe=True)
 
 
+def convert_price(price):
+    """convert dollar price to cents"""
+    return int(round(float(price.replace('$','')) * 100))
+
+
 def read_csv():
     """read csv data into dictionary and clean data"""
     with open('inventory.csv', newline='') as csvfile:
@@ -34,8 +40,7 @@ def read_csv():
         rows = list(product_reader)
         product_list = []
         for row in rows:
-            converted_price = float(row['product_price'].replace('$','')) * 100
-            row['product_price'] = round(converted_price)
+            row['product_price'] = convert_price(row['product_price'])
             converted_date = datetime.strptime(row['date_updated'], '%m/%d/%Y')
             row['date_updated'] = datetime.combine(converted_date, datetime.min.time())
             product_list.append(row)
@@ -101,20 +106,32 @@ def view_entry():
 
 def add_entry():
     """add entry to database"""
-    name_input = None
-    qty_input = None
-    price_input = None
+    try:
+        name_input = input("Enter product name: ")
+        qty_input = int(input("Enter product quantity: "))
+        price_input = convert_price(input("Enter product price: "))
+    except ValueError:
+        error_handler()
+    
 
-    name_input = None
-    qty_input = None
-    price_input = None
 
 
 def backup_database():
     """backup the database to csv"""
-    with open('backup.csv', 'a') as csvfile:
-        fieldnames = ['product_name','product_price','product_quantity','date_updated']
+    db_data = [model_to_dict(item) for item in Product.select().order_by(Product.product_id)]
+
+    with open('backup.csv', 'w', newline='') as csvfile:
+        fieldnames = ['product_id',
+                    'product_name',
+                    'product_price',
+                    'product_quantity',
+                    'date_updated']
         productwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        productwriter.writeheader()
+        productwriter.writerows(db_data)
+
+    print("\n\nDatabase table has been backed up to backup.csv")
+    continue_prompt()
 
 
 def quit_app():
@@ -127,6 +144,11 @@ def quit_app():
 def error_handler():
     """generic error message and reroute to main menu choice"""
     print("\n\nThat is not a valid option, please choose again.")
+    continue_prompt()
+
+
+def continue_prompt():
+    """prompt to press enter to continue back to main menu"""
     input("\nPress ENTER to continue...")
     menu_loop()
 
