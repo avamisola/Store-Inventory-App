@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 import csv
+import os
 import sys
 
 from datetime import date
@@ -6,7 +9,6 @@ from datetime import datetime
 
 from peewee import *
 from playhouse.shortcuts import model_to_dict
-
 
 db = SqliteDatabase('inventory.db')
 
@@ -65,6 +67,7 @@ def add_products(product_list):
 
 def menu_loop():
     """show the menu"""
+    clear()
     choice_main = None
 
     print("""\n
@@ -94,25 +97,49 @@ q) Quit the app
 
 def view_entry():
     """view entry in database by product id"""
-    choice_view = None
-    choice_view = input("Enter product_id to view entry: ").lower().strip()
+    id_input = None
+    id_input = input("Enter product_id to view entry: ").lower().strip()
 
-    if choice_view == 'v':
-        view_entry()
-    else:
+    try:
+        query_result = Product.get(Product.product_id == id_input)
+    except DoesNotExist:
+        print("\n\nThat product_id does not exist in database")
         error_handler()
+
+    dollar_price = '${:,.2f}'.format(query_result.product_price / 100)
+
+    print(f"""\n
+    product_id: {query_result.product_id}
+    product_name: {query_result.product_name}
+    product_price: {dollar_price}
+    product_quantity: {query_result.product_quantity}
+    date_updated: {query_result.date_updated}
+    """)
+    continue_prompt()
 
 
 def add_entry():
     """add entry to database"""
+    entry_dict = {}
+    current_datetime = datetime.now().replace(microsecond=0)
+
     try:
-        name_input = input("Enter product name: ")
-        qty_input = int(input("Enter product quantity: "))
+        name_input = str(input("Enter product name: "))
         price_input = convert_price(input("Enter product price: "))
+        quantity_input = int(input("Enter product quantity: "))
     except ValueError:
         error_handler()
-    
 
+    entry_dict["product_name"] = name_input
+    entry_dict["product_price"] = price_input
+    entry_dict["product_quantity"] = quantity_input
+    entry_dict["date_updated"] = current_datetime
+
+    product_list = [entry_dict]
+    add_products(product_list)
+    
+    print("\n\nProduct has been added to database")
+    continue_prompt()
 
 
 def backup_database():
@@ -142,7 +169,7 @@ def quit_app():
 
 def error_handler():
     """generic error message and reroute to main menu choice"""
-    print("\n\nThat is not a valid option, please choose again.")
+    print("\n\nThat is not a valid input, please try again.")
     continue_prompt()
 
 
@@ -150,6 +177,11 @@ def continue_prompt():
     """prompt to press enter to continue back to main menu"""
     input("\nPress ENTER to continue...")
     menu_loop()
+
+
+def clear():
+    """clear the terminal screen"""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 if __name__ == "__main__":
