@@ -34,7 +34,7 @@ def convert_price(price):
 
 
 def read_csv():
-    """read csv data into dictionary and clean data"""
+    """read csv and clean data, add to database"""
     with open('inventory.csv', newline='') as csvfile:
         product_reader = csv.DictReader(csvfile, delimiter=',')
         rows = list(product_reader)
@@ -44,13 +44,12 @@ def read_csv():
             converted_date = datetime.strptime(row['date_updated'], '%m/%d/%Y')
             row['date_updated'] = datetime.combine(converted_date, datetime.min.time())
             product_list.append(row)
-        return product_list
+        add_products(product_list)
 
 
-def add_products():
-    """add cleaned data from csv to database"""
-    products = read_csv()
-    for product in products:
+def add_products(product_list):
+    """add new products to database, update existing products"""
+    for product in product_list:
         try:
             Product.create(product_name=product['product_name'],
                             product_price=product['product_price'],
@@ -155,5 +154,5 @@ def continue_prompt():
 
 if __name__ == "__main__":
     initialize()
-    add_products()
+    read_csv()
     menu_loop()
